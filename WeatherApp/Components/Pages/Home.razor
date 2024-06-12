@@ -1,0 +1,84 @@
+﻿@page "/"
+@using ApplicationLayer.Data
+@using ApplicationLayer.Dtos
+@rendermode InteractiveServer
+@inject WeatherService WeatherService
+
+
+
+<img src="eweather-logo.png" class="weather-logo" />
+
+<select @onchange="OnSelectedRegionChanged" class="weather-dropdown">
+    <option>Selecteer een regio</option>
+    @foreach (var stationMeasurement in stationMeasurements)
+    {
+        <option>@stationMeasurement.Regio</option>
+    }
+</select>
+
+@if(selectedRegion != null)
+{
+    <div class="row weather-details">
+        <div class="flex-item">
+            <span class="fa-solid fa-temperature-three-quarters weather-icon"></span>
+            <div>
+                <span class="weather-measurement">@selectedRegion.Temperature.ToString().Replace(",", ".")</span>
+                <span>Actuele temperatuur</span>
+            </div>
+        </div>
+        <div class="flex-item">
+            <span class="fa-solid fa-person weather-icon"></span>
+           <div>
+                <span class="weather-measurement">@selectedRegion.FeelTemperature.ToString().Replace(",", ".")</span>
+                <span>Gevoelstemperatuur</span>
+           </div>
+        </div>
+        <div class="flex-item">
+            <span class="fa-solid fa-temperature-arrow-down weather-icon"></span>
+            <div>
+                <span class="weather-measurement">@selectedRegion.GroundTemperature.ToString().Replace(",", ".")</span>
+                <span>Grond temperatuur</span>
+            </div>
+        </div>
+        <div class="flex-item">
+            <span class="fa-solid fa-sun weather-icon"></span>
+            <div>
+                <span class="weather-measurement">@selectedRegion.SunPower</span>
+                <span>Zonnekracht</span>
+            </div>
+        </div>
+        <div class="flex-item">
+            <span class="fa-solid fa-droplet weather-icon"></span>
+            <div>
+                <span class="weather-measurement">@selectedRegion.RainFallLastHour mm</span>
+                <span>Regen laatste uur</span>
+            </div>
+        </div>
+        <div class="flex-item">
+            <span class="fa-solid fa-compass weather-icon"></span>
+            <div>
+                <span class="weather-measurement">@selectedRegion.WindDirection</span>
+                <span>Windrichting</span>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    List<StationMeasurement> stationMeasurements = new List<StationMeasurement>();
+    StationMeasurement? selectedRegion { get; set; } = null;
+    string selectedRegionName { get; set; } = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        WeatherData weatherData = await WeatherService.GetWeatherDataAsync();
+        stationMeasurements = weatherData.Actual.StationMeasurements;
+    }
+
+    private void OnSelectedRegionChanged(ChangeEventArgs e)
+    {
+        selectedRegion = stationMeasurements.FirstOrDefault(x => x.Regio == e.Value?.ToString());
+        StateHasChanged();
+    }
+}
